@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>Introduction — AWR Capacity Predictions</title>
-<meta name="description" content="In-database capacity forecasting and deterministic anomaly detection for Oracle 19c, driven entirely by AWR history — no external ML stack, no agent, no data export.">
+<meta name="description" content="In-database capacity forecasting, alerting and deterministic anomaly detection for Oracle 19c, driven entirely by AWR history — no external ML stack, no agent, no data export.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23b06a0d'/><path d='M16 8L24 23L8 23Z' fill='%23fff'/></svg>">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="assets/style.css">
 <script>
   // No-FOUC: apply the persisted theme before first paint.
@@ -29,16 +30,19 @@
     <nav class="nav" aria-label="Documentation pages">
       <div class="nav__group">Start</div>
       <a class="nav-page" href="index.html"><span class="n">01</span> Introduction</a>
+      <a class="nav-page" href="start.html"><span class="n">02</span> Getting started</a>
       <div class="nav__group">Guides</div>
-      <a class="nav-page" href="concepts.html"><span class="n">02</span> How it works</a>
-      <a class="nav-page" href="install.html"><span class="n">03</span> Installation</a>
+      <a class="nav-page" href="concepts.html"><span class="n">03</span> How it works</a>
       <a class="nav-page" href="usage.html"><span class="n">04</span> Usage</a>
       <a class="nav-page" href="testing.html"><span class="n">05</span> Testing</a>
       <div class="nav__group">Reference</div>
       <a class="nav-page" href="reference.html"><span class="n">06</span> Reference</a>
     </nav>
-    <nav class="toc" id="toc" aria-label="On this page"></nav>
-    <button class="theme-toggle" id="themeBtn" type="button">◐ System</button>
+    <div class="sidebar__foot">
+      <button class="theme-toggle" id="themeBtn" type="button">◐ System</button>
+      <a class="sidebar__link" href="demo/cap_report_demo.html" target="_blank" rel="noopener">Sample report ↗</a>
+      <a class="sidebar__link" href="https://github.com/davidbudac/awr_capacity_predictions">Source on GitHub ↗</a>
+    </div>
   </aside>
 
   <main class="main" id="content" tabindex="-1">
@@ -48,38 +52,86 @@
       <section class="hero" id="overview">
         <span class="eyebrow">In-database · Oracle 19c floor · read-only</span>
         <h1>Capacity forecasting that lives inside the database.</h1>
-        <p class="lead">SQL-level growth forecasting and deterministic anomaly detection driven
-          entirely by AWR history — <strong>no external ML stack, no agent, no data export</strong>.
-          Just views, one small config table, an OML package, and a read-only SQL*Plus text report.</p>
-        <div class="chips">
-          <span class="chip amber"><b>5</b>&nbsp;view layers</span>
-          <span class="chip"><b>6</b>&nbsp;seam views</span>
-          <span class="chip amber"><b>2</b>&nbsp;persisted tables</span>
-          <span class="chip"><b>2</b>&nbsp;forecast engines</span>
-          <span class="chip amber">read-only against AWR</span>
-          <span class="chip">safe to re-run</span>
+        <p class="lead">SQL-level growth forecasting, pollable alerts and deterministic anomaly
+          detection driven entirely by AWR history, with <strong>no external ML stack, no agent, no data
+          export</strong>. Just views, three small tables of its own, an OML package, and read-only
+          SQL*Plus reports in text and HTML.</p>
+        <p class="cta">
+          <a class="btn" href="demo/cap_report_demo.html" target="_blank" rel="noopener">See a sample report ↗</a>
+          <a class="btn btn--ghost" href="start.html">Get started →</a>
+          <span class="cta__note">The sample is the real HTML report, generated from a fictional
+            e-commerce database with 150 days of designed AWR history.</span>
+        </p>
+        <div class="herochart-scroll">
+        <svg class="herochart" viewBox="0 0 860 252" role="img"
+             aria-label="One tablespace over time. AWR history runs from 90 days ago to today, with one day flagged for growing 5.8 sigma more than a typical day. From today a dashed forecast line and a 95% band project forward, crossing the tablespace ceiling between 57 and 77 days out.">
+          <text class="hc-lbl" x="60" y="22">AWR history</text>
+          <text class="hc-lbl" x="438" y="22">forecast · 95% band</text>
+
+          <line class="hc-grid" x1="60" y1="160" x2="820" y2="160"/>
+          <line class="hc-grid" x1="60" y1="115" x2="820" y2="115"/>
+          <line class="hc-grid" x1="60" y1="70"  x2="820" y2="70"/>
+
+          <line class="hc-ceil" x1="60" y1="52" x2="820" y2="52"/>
+          <text class="hc-crit" x="64" y="45">tablespace ceiling</text>
+
+          <path class="hc-band" d="M430 112 L800 18 L800 66 Z"/>
+          <path class="hc-hist" d="M60 182 L80 179 L100 177 L120 174 L140 172 L160 169 L180 167
+            L200 164 L220 162 L240 159 L250 131 L260 129 L280 127 L300 125 L320 122 L340 120
+            L360 118 L380 116 L400 114 L420 113 L430 112"/>
+
+          <circle class="hc-mark" cx="250" cy="131" r="6.5"/>
+          <text class="hc-crit" x="250" y="112" text-anchor="middle">that day grew 5.8σ over the median day</text>
+
+          <path class="hc-fc" d="M430 112 L800 42"/>
+          <line class="hc-div" x1="430" y1="30" x2="430" y2="200"/>
+
+          <circle class="hc-dot" cx="666" cy="52" r="3.5"/>
+          <circle class="hc-dot" cx="747" cy="52" r="3.5"/>
+          <line class="hc-span" x1="666" y1="52" x2="747" y2="52"/>
+          <text class="hc-acc" x="706" y="42" text-anchor="middle">days to full · 57–77</text>
+
+          <line class="hc-axis" x1="60" y1="200" x2="820" y2="200"/>
+          <g class="hc-axis">
+            <line x1="60" y1="200" x2="60" y2="205"/>
+            <line x1="245" y1="200" x2="245" y2="205"/>
+            <line x1="430" y1="200" x2="430" y2="207"/>
+            <line x1="615" y1="200" x2="615" y2="205"/>
+            <line x1="800" y1="200" x2="800" y2="205"/>
+          </g>
+          <text class="hc-cap" x="60"  y="221" text-anchor="middle">&#8722;90 d</text>
+          <text class="hc-cap" x="245" y="221" text-anchor="middle">&#8722;45 d</text>
+          <text class="hc-acc" x="430" y="221" text-anchor="middle">today</text>
+          <text class="hc-cap" x="615" y="221" text-anchor="middle">+45 d</text>
+          <text class="hc-cap" x="800" y="221" text-anchor="middle">+90 d</text>
+          <text class="hc-src" x="60" y="244">DBA_HIST_TBSPC_SPACE_USAGE &#8594; CAPD_ &#8594; CAPF_ / CAPA_</text>
+        </svg>
         </div>
       </section>
 
-      <p>This suite turns the performance history Oracle already collects (AWR) into forward-looking
-        capacity answers, without moving a single row out of the database. Everything runs as SQL and
-        PL/SQL you can read, and every number it prints can be reconstructed by hand. Start here for the
-        big picture, then follow the guides to install it, run it, and prove it against known answers.</p>
+      <p>This suite turns the history Oracle already collects (AWR) into forward-looking capacity
+        answers without moving a row out of the database. Five view layers:
+        <span class="inline">CAPV_</span> (seam) → <span class="inline">CAPD_</span> (daily) →
+        <span class="inline">CAPF_</span> (forecast) → <span class="inline">CAPA_</span> (anomaly) →
+        <span class="inline">CAPR_</span> (integration). The top layer is what the reports and any
+        monitoring system read.</p>
 
       <!-- ===================== WHAT IT ANSWERS ===================== -->
       <div class="section-head" id="what">
         <span class="eyebrow">The point</span>
-        <h2>Three questions it answers</h2>
-        <p>Per tablespace and per container — the operational questions that actually page you.</p>
+        <h2>Five questions it answers</h2>
+        <p>Per series, per tablespace and per container.</p>
       </div>
       <div class="tablewrap">
         <table>
           <caption>What the suite produces</caption>
           <thead><tr><th scope="col">Question</th><th scope="col">What it produces</th><th scope="col">Source</th></tr></thead>
           <tbody>
-            <tr><td><b>Tablespace growth</b></td><td>Projected size at +30 / +90 / +180 / +365 days, plus <code>days_to_full</code></td><td class="def">DBA_HIST_TBSPC_SPACE_USAGE</td></tr>
-            <tr><td><b>CPU trend</b></td><td>Host busy % and DB CPU seconds, with days-to-saturation</td><td class="def">DBA_HIST_OSSTAT · SYS_TIME_MODEL</td></tr>
+            <tr><td><b>Tablespace growth</b></td><td>Projected size at +30 / +90 / +180 / +365 days with 95% prediction bands, and <code>days_to_full</code> with a worst/best-case range</td><td class="def">DBA_HIST_TBSPC_SPACE_USAGE</td></tr>
+            <tr><td><b>CPU headroom</b></td><td>Host busy% (daily average, p95 "busy hour" and peak-window) plus DB CPU as a percent of core capacity, days-to-saturation, and level shifts</td><td class="def">DBA_HIST_OSSTAT · SYS_TIME_MODEL</td></tr>
+            <tr><td><b>Fixed-ceiling series</b></td><td>Peak <code>processes</code> / <code>sessions</code> against the init parameters, redo GiB/day, and total DB size against the summed tablespace ceilings, each with days-to-limit</td><td class="def">DBA_HIST_RESOURCE_LIMIT · SYSSTAT · tablespace usage</td></tr>
             <tr><td><b>Anomalies</b></td><td>Median + MAD flags, each reproducible by hand (value, median, k·σ, robust z)</td><td class="def">daily deltas</td></tr>
+            <tr><td><b>Which engine to trust</b></td><td>A holdout backtest that replays the recent past and scores each engine's MAPE and bias against what actually happened</td><td class="def">CAPF_BACKTEST</td></tr>
           </tbody>
         </table>
       </div>
@@ -90,45 +142,119 @@
         <h2>Write the analytics once, swap the data source underneath</h2>
         <p>The whole design hangs on a single trick called the <em>seam</em>.</p>
       </div>
-      <p>Every calculation reads from a thin layer of six views prefixed
-        <span class="inline">CAPV_</span>, shaped to look just like Oracle's AWR data dictionary.
-        Nothing above them ever touches the real <span class="inline">DBA_HIST_*</span> tables directly.
-        That single layer is the <b>seam</b>: to change where the data comes from, you swap
-        <em>one</em> install file — and the identical SQL then runs against this database's live AWR, a
-        central fleet warehouse, or synthetic test fixtures, producing the same math and the same report
-        either way. It's the database equivalent of pointing a hostname at a different server.</p>
-      <div class="callout tip">
-        <span class="ico">▸</span>
-        <p><strong>The one idea to hold onto.</strong> Point the seam at real AWR to report on
-        production; point it at fixtures — fake data whose exact answers are worked out in advance — to
-        prove the tool is correct. Same code either way. The
-        <a href="concepts.html">How it works</a> page walks the full pipeline built on top of it.</p>
-      </div>
+      <p>Every calculation reads a thin layer of nine <span class="inline">CAPV_</span> views shaped
+        like Oracle's AWR dictionary; nothing above them touches
+        <span class="inline">DBA_HIST_*</span> directly. Swap that one install file and the identical
+        SQL runs against live AWR, a fleet warehouse, or test fixtures whose answers are worked out in
+        advance. <a href="concepts.html">How it works</a> walks the full pipeline.</p>
+      <svg class="archflow" viewBox="0 0 860 240" role="img"
+           aria-label="Architecture: local AWR, the fleet warehouse or test fixtures feed the CAPV seam, then CAPD daily rollups split into CAPF forecasts and CAPA anomalies, which merge into the CAPR report views.">
+        <defs>
+          <marker id="af-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+            <path class="af-head" d="M0 0L10 5L0 10z"/>
+          </marker>
+        </defs>
+        <rect class="af-src" x="10" y="20" width="150" height="40" rx="6"/>
+        <text class="af-name" x="85" y="38" text-anchor="middle">DBA_HIST_*</text>
+        <text class="af-cap" x="85" y="53" text-anchor="middle">local AWR</text>
+        <rect class="af-src" x="10" y="100" width="150" height="40" rx="6"/>
+        <text class="af-name" x="85" y="118" text-anchor="middle">AWRV_*</text>
+        <text class="af-cap" x="85" y="133" text-anchor="middle">fleet warehouse</text>
+        <rect class="af-src" x="10" y="180" width="150" height="40" rx="6"/>
+        <text class="af-name" x="85" y="198" text-anchor="middle">FIX_*</text>
+        <text class="af-cap" x="85" y="213" text-anchor="middle">test fixtures</text>
+        <path class="af-edge" d="M160 40 C 200 40 200 105 235 112" marker-end="url(#af-arr)"/>
+        <path class="af-edge" d="M160 120 L 235 120" marker-end="url(#af-arr)"/>
+        <path class="af-edge" d="M160 200 C 200 200 200 135 235 128" marker-end="url(#af-arr)"/>
+        <rect class="af-seam" x="240" y="95" width="110" height="50" rx="6"/>
+        <text class="af-seam-name" x="295" y="116" text-anchor="middle">CAPV_</text>
+        <text class="af-seam-cap" x="295" y="132" text-anchor="middle">the seam</text>
+        <path class="af-edge" d="M350 120 L 395 120" marker-end="url(#af-arr)"/>
+        <rect class="af-box" x="400" y="95" width="110" height="50" rx="6"/>
+        <text class="af-name" x="455" y="116" text-anchor="middle">CAPD_</text>
+        <text class="af-cap" x="455" y="132" text-anchor="middle">daily rollups</text>
+        <path class="af-edge" d="M510 110 C 545 105 545 65 575 62" marker-end="url(#af-arr)"/>
+        <path class="af-edge" d="M510 130 C 545 135 545 175 575 178" marker-end="url(#af-arr)"/>
+        <rect class="af-box" x="580" y="38" width="110" height="50" rx="6"/>
+        <text class="af-name" x="635" y="59" text-anchor="middle">CAPF_</text>
+        <text class="af-cap" x="635" y="75" text-anchor="middle">forecasts</text>
+        <rect class="af-box" x="580" y="154" width="110" height="50" rx="6"/>
+        <text class="af-name" x="635" y="175" text-anchor="middle">CAPA_</text>
+        <text class="af-cap" x="635" y="191" text-anchor="middle">anomalies</text>
+        <path class="af-edge" d="M690 63 C 720 65 720 105 745 112" marker-end="url(#af-arr)"/>
+        <path class="af-edge" d="M690 179 C 720 177 720 137 745 128" marker-end="url(#af-arr)"/>
+        <rect class="af-out" x="750" y="95" width="100" height="50" rx="6"/>
+        <text class="af-out-name" x="800" y="116" text-anchor="middle">CAPR_</text>
+        <text class="af-out-cap" x="800" y="132" text-anchor="middle">the report</text>
+      </svg>
 
       <!-- ===================== TWO ENGINES ===================== -->
       <div class="section-head" id="engines">
         <span class="eyebrow">Forecasting</span>
         <h2>Two engines, side by side</h2>
-        <p>A fully auditable baseline, and an optional seasonality-aware second opinion.</p>
+        <p>An auditable baseline, and an optional seasonality-aware second opinion.</p>
       </div>
       <div class="split" style="gap:16px">
         <div class="track-card a" style="border-top-color:var(--accent)">
           <div class="tk">Tier 1 · always on</div>
-          <h4>Pure SQL — a straight trend line</h4>
-          <p>Standard linear regression (<code>REGR_*</code>). Every forecast is just slope × days plus
-            a starting point, and every anomaly is explained by its median and MAD — so you can check
-            any number by hand. Nothing to train, nothing hidden.</p>
-          <div class="meta"><span><b>Reaches:</b> +30 / +90 / +180 / +365 days</span>
+          <h4>Pure SQL, a straight trend line</h4>
+          <p>Linear regression (<code>REGR_*</code>), or Theil–Sen for robustness. Every forecast is
+            slope × days plus a starting point, every anomaly is explained by its median and MAD, so
+            you can check any number by hand. Nothing to train.</p>
+          <div class="meta"><span><b>Reaches:</b> +30 / +90 / +180 / +365 days, with bands</span>
             <span><b>Needs:</b> nothing beyond the views</span></div>
         </div>
         <div class="track-card b">
           <div class="tk">Tier 2 · optional</div>
-          <h4>OML ESM — exponential smoothing</h4>
-          <p>One Oracle Machine Learning model per series via <code>DBMS_DATA_MINING</code>. Tablespaces
-            use Holt (trend); CPU uses additive Winters (weekly seasonality). Shown against Tier 1 in
-            the report.</p>
-          <div class="meta"><span><b>Reaches:</b> +30 only — 19c hard-caps the horizon at 30 steps</span>
+          <h4>OML ESM, exponential smoothing</h4>
+          <p>One Oracle Machine Learning model per series via <code>DBMS_DATA_MINING</code>. CPU uses
+            additive Winters; tablespaces default to AUTO, which picks Holt or additive Winters by
+            holdout accuracy. Shown against Tier 1 in the report.</p>
+          <div class="meta"><span><b>Reaches:</b> +30 only; 19c hard-caps the horizon at 30 steps</span>
             <span><b>Needs:</b> <span class="inline">CREATE MINING MODEL</span></span></div>
+        </div>
+      </div>
+
+      <!-- ===================== NOTHING EXTRA TO RUN ===================== -->
+      <div class="section-head" id="why">
+        <span class="eyebrow">Why in-database</span>
+        <h2>Nothing extra to run</h2>
+        <p>The usual capacity stack, and what this suite replaces it with.</p>
+      </div>
+      <div class="compare">
+        <div class="col no">
+          <h3>Typical capacity stack</h3>
+          <div class="pic">
+            <svg viewBox="0 0 220 70" width="200" role="img" aria-label="Database, agent, time-series database and dashboards as separate connected boxes.">
+              <rect class="cp-box" x="5" y="45" width="50" height="20" rx="4"/><text class="cp-lbl" x="30" y="59" text-anchor="middle">DB</text>
+              <rect class="cp-box" x="85" y="45" width="50" height="20" rx="4"/><text class="cp-lbl" x="110" y="59" text-anchor="middle">agent</text>
+              <rect class="cp-box" x="165" y="45" width="50" height="20" rx="4"/><text class="cp-lbl" x="190" y="59" text-anchor="middle">TSDB</text>
+              <rect class="cp-box" x="85" y="5" width="50" height="20" rx="4"/><text class="cp-lbl" x="110" y="19" text-anchor="middle">dashboards</text>
+              <path class="cp-edge" d="M55 55 h28 M135 55 h28 M110 45 v-18"/>
+            </svg>
+          </div>
+          <ul>
+            <li>agents installed on every host</li>
+            <li>metrics exported off the database</li>
+            <li>a separate metrics store and dashboard stack to run</li>
+            <li>another tool to patch, secure and license</li>
+          </ul>
+        </div>
+        <div class="col yes">
+          <h3>This suite</h3>
+          <div class="pic">
+            <svg viewBox="0 0 220 70" width="200" role="img" aria-label="A single Oracle 19c box: AWR flows into views, nothing leaves the database.">
+              <rect class="cp-box" x="60" y="12" width="100" height="46" rx="6"/>
+              <text class="cp-lbl" x="110" y="30" text-anchor="middle" font-size="9.5">Oracle 19c</text>
+              <text class="cp-lbl cp-mono" x="110" y="44" text-anchor="middle">AWR &#8594; views</text>
+            </svg>
+          </div>
+          <ul>
+            <li>runs inside the database, plain SQL*Plus</li>
+            <li>reads the AWR you already collect</li>
+            <li>read-only: three tables of its own, zero DML on your data</li>
+            <li>one script to install, one report to run</li>
+          </ul>
         </div>
       </div>
 
@@ -136,45 +262,49 @@
       <div class="section-head" id="safe">
         <span class="eyebrow">Trust</span>
         <h2>Safe by design</h2>
-        <p>Two properties make this comfortable to install on a database you care about.</p>
+        <p>Two properties, so it is comfortable to install on a database you care about.</p>
       </div>
       <div class="callout">
         <span class="ico">i</span>
-        <p><strong>Read-only against your data.</strong> The report and all
-        <span class="inline">CAPV / CAPD / CAPF / CAPA</span> views only ever <code>SELECT</code>. The
-        suite writes exactly two tables of its own — <span class="inline">CAP_CONFIG</span> (tuning
-        knobs) and <span class="inline">CAP_ML_MODEL</span> (the Tier 2 registry) — and nothing else.</p>
+        <p><strong>Read-only against your data.</strong> The reports and all
+        <span class="inline">CAPV / CAPD / CAPF / CAPA / CAPR</span> views only ever <code>SELECT</code>.
+        The suite writes exactly three tables of its own, <span class="inline">CAP_CONFIG</span>
+        (tuning knobs), <span class="inline">CAP_TBSPC_OVERRIDE</span> (operator-set ceilings and
+        exclusions) and <span class="inline">CAP_ML_MODEL</span> (the Tier 2 registry), and nothing
+        else.</p>
       </div>
       <div class="callout tip">
         <span class="ico">▸</span>
-        <p><strong>Safe to re-run.</strong> Re-running the installer is idempotent and non-destructive:
-        your config overrides and trained models survive <span class="inline">@install.sql</span>. A
-        full teardown is a single <span class="inline">@uninstall.sql</span>.</p>
+        <p><strong>Safe to re-run.</strong> Re-running the installer is idempotent and non-destructive.
+        Your config knobs, limit overrides and trained models all survive
+        <span class="inline">@install.sql</span>. A full teardown is a single
+        <span class="inline">@uninstall.sql</span>.</p>
       </div>
 
       <!-- ===================== NEXT ===================== -->
       <div class="section-head" id="next">
         <span class="eyebrow">Read next</span>
         <h2>Where to go from here</h2>
-        <p>Understand the design, or jump straight to getting it running.</p>
+        <p>Forecast quality, alerts, tuning knobs and scope are covered on the pages below.</p>
       </div>
       <div class="cardgrid">
-        <a class="card" href="concepts.html">
-          <div class="k">02 · Concepts</div>
-          <h3>How it works</h3>
-          <p>The seam, the five-layer pipeline, and the two engines in depth.</p>
-          <div class="go">Read the architecture →</div>
+        <a class="card" href="start.html">
+          <div class="k">02 · Start</div>
+          <h3>Getting started</h3>
+          <p>Clone it, run one command, read your first report. Five minutes, nothing written to AWR.</p>
+          <div class="go">Get started →</div>
         </a>
-        <a class="card" href="install.html">
+        <a class="card" href="concepts.html">
           <div class="k">03 · Guide</div>
-          <h3>Installation</h3>
-          <p>Prerequisites, the three modes, and a clean install in minutes.</p>
-          <div class="go">Install it →</div>
+          <h3>How it works</h3>
+          <p>The seam, the five-layer pipeline, the forecast-quality machinery, and the two engines
+            in depth.</p>
+          <div class="go">Read the architecture →</div>
         </a>
         <a class="card" href="usage.html">
           <div class="k">04 · Guide</div>
           <h3>Usage</h3>
-          <p>Run the report, read its six sections, tune the knobs, add Tier 2.</p>
+          <p>Run the report, read its sections, tune the knobs, add Tier 2.</p>
           <div class="go">Run the report →</div>
         </a>
         <a class="card" href="testing.html">
@@ -195,6 +325,7 @@
 
     </div><!-- /wrap -->
   </main>
+  <aside class="rail"><nav class="toc" id="toc" aria-label="On this page"></nav></aside>
 </div>
 <script src="assets/site.js"></script>
 </body>
